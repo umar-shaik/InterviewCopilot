@@ -143,7 +143,12 @@ function normalizeModelName(model: string | undefined): string | null {
 }
 
 export function geminiErrorMessage(error: ApiError): string {
-  if (error.status === 400) return "Gemini rejected the request or audio format. Try speaking a clear, short question.";
+  if (error.status === 400) {
+    const details = error.message.replace(/\s+/g, " ").trim().slice(0, 500);
+    return details
+      ? `Gemini rejected the request (HTTP 400): ${details}`
+      : "Gemini rejected the request (HTTP 400). Check that the selected model supports audio input.";
+  }
   if (error.status === 401 || error.status === 403) return "Google rejected this Gemini API key or project. Create a Gemini API key in Google AI Studio, then replace the key in Settings or the root .env file.";
   if (error.status === 404) return "Google says this API key's project cannot use the selected model. In Settings, click “Load models available to my key” and choose a model Google lists. If Google lists none, create or select a Gemini key in Google AI Studio.";
   if (error.status === 429) return "Gemini's free-tier rate limit or quota was reached. Check active limits in Google AI Studio and try again after they reset.";
